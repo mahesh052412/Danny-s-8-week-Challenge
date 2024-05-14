@@ -193,10 +193,15 @@ select sales_data.customer_id as s_cust_id, order_date, sales_data.product_id as
 right join menu
 	on sales_data.product_id = menu.product_id
 order by s_cust_id
-)
-select *, row_number() over(partition by s_cust_id) as r_num 
+), final_table as
+(
+select *, row_number() over(partition by s_cust_id) as r_num, (price * 20) as points_earned
 from t4 
-where mem_or_not = 1;
+where mem_or_not = 1
+)
+select s_cust_id, sum(points_earned) as total_points 
+from final_table
+group by s_cust_id; 
 
 
 
