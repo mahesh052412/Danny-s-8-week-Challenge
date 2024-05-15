@@ -99,14 +99,116 @@ select customer_id, product_name from t3 where rank_for_max_order = 1;
 -- 6. Which item was purchased first by the customer after they became a member?
 with t4 as
 (
-select sales_data.customer_id as S_cust_id, order_date, product_id, members.customer_id as m_cust_id, join_date,
+select sales_data.customer_id as s_cust_id, order_date, sales_data.product_id as s_product_id, join_date, product_name, price,
  case
-	when order_date >= join_date then 0 or 1  
+	when order_date >= join_date then '0' or '1'  
  end as mem_or_not
  from sales_data
  inner join members 
-	on sales_data.customer_id = members.customer_id)
-select S_cust_id, order_date, product_id, join_date, mem_or_not from t4;
+	on sales_data.customer_id = members.customer_id
+right join menu
+	on sales_data.product_id = menu.product_id
+order by s_cust_id
+), final_table as
+(
+select *, row_number() over(partition by s_cust_id) as r_num 
+from t4 
+where mem_or_not = 1
+)
+select S_cust_id, product_name from final_table  where mem_or_not = 1 and r_num = 1; 
+
+
+-- 7. Which item was purchased just before the customer became a member?
+with t4 as
+(
+select sales_data.customer_id as s_cust_id, order_date, sales_data.product_id as s_product_id, join_date, product_name, price,
+ case
+	when order_date >= join_date then '0' or '1'  
+ end as mem_or_not
+ from sales_data
+ inner join members 
+	on sales_data.customer_id = members.customer_id
+right join menu
+	on sales_data.product_id = menu.product_id
+order by s_cust_id
+), final_table as
+(
+select *, row_number() over(partition by s_cust_id) as r_num 
+from t4 
+where mem_or_not is null
+)
+select S_cust_id, product_name from final_table  where mem_or_not is null and r_num = 1;
+
+-- 8. What is the total items and amount spent for each member before they became a member?
+with t4 as
+(
+select sales_data.customer_id as s_cust_id, order_date, sales_data.product_id as s_product_id, join_date, product_name, price,
+ case
+	when order_date >= join_date then '0' or '1'  
+ end as mem_or_not
+ from sales_data
+ inner join members 
+	on sales_data.customer_id = members.customer_id
+right join menu
+	on sales_data.product_id = menu.product_id
+order by s_cust_id
+), final_table as
+(
+select *, row_number() over(partition by s_cust_id) as r_num 
+from t4 
+where mem_or_not is null
+)
+select s_cust_id, count(s_cust_id) as order_count, sum(price) as total_cost 
+from final_table
+group by s_cust_id; 
+
+-- 9.  If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
+with t5 as
+(
+select customer_id, order_date, sales_data.product_id as s_product_id, product_name, price,
+case
+	when product_name = 'sushi' then (price * 20)
+    when product_name != 'sushi' then (price * 10)
+end product_points
+from sales_data
+inner join menu
+	on sales_data.product_id = menu.product_id
+)
+select customer_id, sum(product_points) as total_points 
+from t5
+group by customer_id;
+
+
+-- 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi: 
+-- how many points do customer A and B have at the end of January?
+with t4 as
+(
+select sales_data.customer_id as s_cust_id, order_date, sales_data.product_id as s_product_id, join_date, product_name, price,
+ case
+	when order_date >= join_date then '0' or '1'  
+ end as mem_or_not
+ from sales_data
+ inner join members 
+	on sales_data.customer_id = members.customer_id
+right join menu
+	on sales_data.product_id = menu.product_id
+order by s_cust_id
+), final_table as
+(
+select *, row_number() over(partition by s_cust_id) as r_num, (price * 20) as points_earned
+from t4 
+where mem_or_not = 1
+)
+select s_cust_id, sum(points_earned) as total_points 
+from final_table
+group by s_cust_id; 
+
+
+
+
+
+
+
 
 
 
