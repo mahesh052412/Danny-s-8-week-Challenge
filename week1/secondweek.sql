@@ -130,9 +130,11 @@ from customer_orders;
 
 select * from sec_cust_orders;
 
-update sec_cust_orders
-set extras = 0
-where extras is null;
+select *, left(exclusions,3) as exclusions from sec_cust_orders;
+
+
+
+
 
 
 
