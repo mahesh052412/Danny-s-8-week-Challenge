@@ -130,7 +130,7 @@ from customer_orders;
 
 select * from sec_cust_orders;
 
-select *, left(exclusions,3) as exclusions from sec_cust_orders;
+select order_id, left(exclusions,3) as exclusions from sec_cust_orders;
 
 
 
