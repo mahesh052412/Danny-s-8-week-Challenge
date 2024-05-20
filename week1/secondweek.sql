@@ -128,15 +128,86 @@ select order_id, customer_id, pizza_id, exclusions, extras,
 		substring_index(substring_index(order_time, ' ',2), ' ', -1) as order_time1
 from customer_orders;
 
+update sec_cust_orders
+set extras = 0
+where extras = '' or extras = 'null' or extras is null;
+
+update sec_cust_orders
+set extras = trim(extras);
+
+
 select * from sec_cust_orders;
 
-select order_id, left(exclusions,3) as exclusions from sec_cust_orders;
+
+create table final_sec_cust_orders as
+select *, left(exclusions, 1) as exclusion,
+		  left(extras, 1) as extra
+          from sec_cust_orders
+union
+select *, right(exclusions, 1) as exclusion,
+		  right(extras, 1) as extra
+          from sec_cust_orders
+;
+
+
+alter table final_sec_cust_orders
+drop column extras;
+
+
+select * from final_sec_cust_orders
+order by order_id;
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- CREATE TABLE numbers (
+--   n INT PRIMARY KEY);
+
+-- INSERT INTO numbers VALUES (1),(2),(3),(4),(5),(6);
+
+-- SELECT
+--   tablename.id,
+--   SUBSTRING_INDEX(SUBSTRING_INDEX(tablename.name, ',', numbers.n), ',', -1) name
+-- FROM
+--   numbers INNER JOIN tablename
+--   ON CHAR_LENGTH(tablename.name)
+--      -CHAR_LENGTH(REPLACE(tablename.name, ',', ''))>=numbers.n-1
+-- ORDER BY
+--   id, n
 
 
 
