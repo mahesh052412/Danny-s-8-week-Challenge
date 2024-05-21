@@ -1,3 +1,5 @@
+-- Creating table and inserting values
+ 
 DROP TABLE IF EXISTS runners;
 CREATE TABLE runners (
   `runner_id` INTEGER,
@@ -122,12 +124,16 @@ CREATE TABLE sec_cust_orders(
 
 select * from sec_cust_orders;
 
+-- Creating new table and spliting date and time
 insert sec_cust_orders
 select order_id, customer_id, pizza_id, exclusions, extras, 
 		substring_index(substring_index(order_time, ' ',1), ' ', -1) as order_date,
 		substring_index(substring_index(order_time, ' ',2), ' ', -1) as order_time1
 from customer_orders;
 
+
+-- Cleaning the data
+-- Upadting the null values
 update sec_cust_orders
 set extras = 0
 where extras = '' or extras = 'null' or extras is null;
@@ -135,10 +141,9 @@ where extras = '' or extras = 'null' or extras is null;
 update sec_cust_orders
 set extras = trim(extras);
 
-
 select * from sec_cust_orders;
 
-
+-- Standerdaizing the data to new rows and columns
 create table final_sec_cust_orders as
 select *, left(exclusions, 1) as exclusion,
 		  left(extras, 1) as extra
@@ -149,15 +154,77 @@ select *, right(exclusions, 1) as exclusion,
           from sec_cust_orders
 ;
 
-
+-- Droping the unwanted column
 alter table final_sec_cust_orders
 drop column extras;
 
-
+-- Final table for cust orders
 select * from final_sec_cust_orders
 order by order_id;
 
 
+select * from runner_orders;
+
+-- Spliting the date and time to new column
+create table runner_order as
+select *, substring_index(pickup_time,' ', 1) as pickup_date,
+		  substring_index(pickup_time,' ', -1) as pickup_time1
+          from runner_orders;
+          
+select * from runner_order;
+
+-- Droped the column
+alter table runner_order
+drop column pickup_time;
+
+-- Updating the null values
+update runner_order
+set distance = 0
+where distance = 'null';
+
+update runner_order
+set duration = 0
+where duration = 'null';
+
+update runner_order
+set cancellation = ''
+where cancellation = 'null' or cancellation is null;
+
+update runner_order
+set pickup_time1 = 0
+where pickup_time1 = 'null' or pickup_time1 is null;
+
+update runner_order
+set pickup_date = '1999-01-01'
+where pickup_date = '0000-00-00';
+
+-- Replacing the values by standardizing 
+update runner_order set distance = replace(distance, 'km', '');
+
+update runner_order set duration = replace(duration, 'mins', '');
+
+-- Taking out the spaces
+update runner_order set duration = trim(duration);
+update runner_order set distance = trim(distance);
+update runner_order set cancellation = trim(cancellation);
+update runner_order set pickup_date = trim(pickup_date);
+update runner_order set pickup_time = trim(pickup_time);
+
+
+-- Updating the data types
+alter table runner_order
+modify distance int;
+
+alter table runner_order
+modify duration int;
+
+alter table runner_order
+modify pickup_time1 time;
+
+alter table runner_order
+modify pickup_date date;
+
+select * from runner_order;
 
 
 
@@ -176,38 +243,6 @@ order by order_id;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- CREATE TABLE numbers (
---   n INT PRIMARY KEY);
-
--- INSERT INTO numbers VALUES (1),(2),(3),(4),(5),(6);
-
--- SELECT
---   tablename.id,
---   SUBSTRING_INDEX(SUBSTRING_INDEX(tablename.name, ',', numbers.n), ',', -1) name
--- FROM
---   numbers INNER JOIN tablename
---   ON CHAR_LENGTH(tablename.name)
---      -CHAR_LENGTH(REPLACE(tablename.name, ',', ''))>=numbers.n-1
--- ORDER BY
---   id, n
 
 
 
