@@ -112,6 +112,9 @@ VALUES
   (10, 'Salami'),
   (11, 'Tomatoes'),
   (12, 'Tomato Sauce');
+  
+
+  
 CREATE TABLE sec_cust_orders(
   `order_id` INTEGER,
   `customer_id` INTEGER,
@@ -187,8 +190,8 @@ set duration = 0
 where duration = 'null';
 
 update runner_order
-set cancellation = ''
-where cancellation = 'null' or cancellation is null;
+set cancellation = 'delivered'
+where cancellation = '';
 
 update runner_order
 set pickup_time1 = 0
@@ -224,18 +227,53 @@ modify pickup_time1 time;
 alter table runner_order
 modify pickup_date date;
 
+select * from final_sec_cust_orders;
+select * from runners;
 select * from runner_order;
+select * from pizza_names;
+select * from pizza_recipes;
+select * from pizza_toppings;
+
+-- PIZZA METRICS
+
+-- 1.How many pizzas were ordered?
+select count(order_id) as pizzas_ordered from final_sec_cust_orders;
+
+-- 2.How many unique customer orders were made?
+with t1 as 
+(
+select  distinct order_id from final_sec_cust_orders
+)
+select count(order_id) as u_cust_orders from t1;
+ 
+ -- 3.How many successful orders were delivered by each runner?
+ select count(order_id) successful_orders from runner_order
+ where cancellation = '';
+
+-- How many of each type of pizza was delivered?
+select count(pizza_id) as type_of_pizza_delivered
+from ( select pizza_id from final_sec_cust_orders group by pizza_id) t1;
+
+-- How many Vegetarian and Meatlovers were ordered by each customer?
+select customer_id, pizza_id, count(customer_id) as no_of_orders_cust from final_sec_cust_orders
+group by customer_id, pizza_id
+order by customer_id;
 
 
+-- What was the maximum number of pizzas delivered in a single order?
+
+select final_sec_cust_orders.order_id, count(final_sec_cust_orders.order_id) as delivered_pizza 
+from final_sec_cust_orders
+inner join runner_order
+	on final_sec_cust_orders.order_id = runner_order.order_id
+group by final_sec_cust_orders.order_id
+order by delivered_pizza desc
+limit 1;
+
+-- For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
 
 
-
-
-
-
-
-
-
+select * from runner_order;
 
 
 
