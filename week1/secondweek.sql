@@ -272,18 +272,26 @@ limit 1;
 
 -- For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
 
-
-select * from runner_order;
-
-
-
-
-
-
+select (select count(order_id) 
+from final_sec_cust_orders
+where exclusion > 0 or extra > 0) atleast_1_change ,(select count(order_id)
+from final_sec_cust_orders
+where exclusion = 0 and extra = 0) no_change from final_sec_cust_orders
+limit 1;
 
 
+-- How many pizzas were delivered that had both exclusions and extras?
+select count(final_sec_cust_orders.order_id) as delivered_pizza 
+from final_sec_cust_orders
+inner join runner_order
+	on final_sec_cust_orders.order_id = runner_order.order_id
+where cancellation = 'delivered' and exclusion > 0 and extra > 0;
 
+-- What was the total volume of pizzas ordered for each hour of the day?
 
+select * 
+from final_sec_cust_orders
+order by order_date, order_time;
 
 
 
