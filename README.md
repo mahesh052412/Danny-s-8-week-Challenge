@@ -1,4 +1,4 @@
-# Danny-s-2-week-Challenge
+# Danny-s-8-week-Challenge
 ## Introduction
 This repository contains SQL scripts for analyzing customer sales data from a restaurant. The data is structured into three main tables: sales_data, menu, and members. The analysis focuses on customer spending, purchasing behavior, and loyalty program points accumulation.
 
